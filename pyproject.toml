@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "janitor-sucker"
-version = "0.1.0"
+version = "0.1.2"
 description = "Automates extracting characters from JanitorAI to Sucker.dev"
 readme = "README.md"
 requires-python = ">=3.7"
@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-janitor-sync = "sync:main"
+janitor-dl = "cli:main"
 
 [tool.setuptools]
-py-modules = ["sync", "setup_profile"]
+py-modules = ["cli", "sync", "setup_profile", "create_profile"]

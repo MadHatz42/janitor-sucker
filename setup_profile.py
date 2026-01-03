@@ -72,9 +72,22 @@ def update_sync_py(profile_path):
         return False, "not_found"
     
     # Check if this profile is already in use
+    # Normalize paths by expanding tildes for comparison
     current_profile = get_current_profile()
-    if current_profile == profile_path:
-        return False, "already_in_use"
+    if current_profile:
+        current_expanded = os.path.expanduser(current_profile)
+        new_expanded = os.path.expanduser(profile_path)
+        # Compare both raw and expanded paths
+        # Use Path.resolve() to handle any symlinks or relative path issues
+        try:
+            current_resolved = Path(current_expanded).resolve()
+            new_resolved = Path(new_expanded).resolve()
+            if current_profile == profile_path or current_resolved == new_resolved:
+                return False, "already_in_use"
+        except Exception:
+            # If path resolution fails, fall back to string comparison
+            if current_profile == profile_path or current_expanded == new_expanded:
+                return False, "already_in_use"
     
     # Read the file
     with open(sync_py_path, 'r') as f:
@@ -128,12 +141,18 @@ def main():
             print(f"     {profile_path}\n")
         
         print(f"  {len(profiles) + 1}. Rescan for profiles")
-        print(f"  {len(profiles) + 2}. Create instructions for a new profile\n")
+        print(f"  {len(profiles) + 2}. Create instructions for a new profile")
+        print(f"  0. Go back to main menu\n")
         
         while True:
             try:
-                choice = input(f"Select a profile (1-{len(profiles) + 2}): ").strip()
+                choice = input(f"Select an option (0-{len(profiles) + 2}): ").strip()
                 choice_num = int(choice)
+                
+                if choice_num == 0:
+                    # Go back to main menu
+                    print("\n[INFO] Returning to main menu...\n")
+                    return 0
                 
                 if 1 <= choice_num <= len(profiles):
                     selected_profile = profiles[choice_num - 1]
@@ -142,11 +161,38 @@ def main():
                     
                     print(f"\n[INFO] Selected profile: {profile_name}")
                     
+                    # Check what's currently in sync.py for debugging
+                    current_profile = get_current_profile()
+                    if current_profile:
+                        print(f"[DEBUG] Current profile in sync.py: {current_profile}")
+                        print(f"[DEBUG] Selected profile path: {profile_path}")
+                    
                     success, status = update_sync_py(profile_path)
                     
                     if status == "already_in_use":
-                        print(f"[INFO] This profile is already in use in sync.py")
-                        print(f"       No changes needed. You can run sync.py with this profile.")
+                        # Verify the paths actually match by expanding them
+                        if current_profile:
+                            current_expanded = os.path.expanduser(current_profile)
+                            new_expanded = os.path.expanduser(profile_path)
+                            if current_expanded == new_expanded:
+                                print(f"[INFO] This profile is already in use in sync.py")
+                                print(f"       No changes needed. You can run sync.py with this profile.")
+                            else:
+                                # Paths don't actually match, force update
+                                print(f"[WARNING] Profile path mismatch detected. Updating sync.py...")
+                                # Force update by bypassing the check
+                                sync_py_path = Path(__file__).parent / "sync.py"
+                                with open(sync_py_path, 'r') as f:
+                                    content = f.read()
+                                pattern = r'PROFILE_PATH = os\.path\.expanduser\(".*"\)'
+                                replacement = f'PROFILE_PATH = os.path.expanduser("{profile_path}")'
+                                new_content = re.sub(pattern, replacement, content)
+                                with open(sync_py_path, 'w') as f:
+                                    f.write(new_content)
+                                print(f"[SUCCESS] Updated sync.py with profile: {profile_path}")
+                        else:
+                            print(f"[INFO] This profile is already in use in sync.py")
+                            print(f"       No changes needed. You can run sync.py with this profile.")
                         return 0
                     elif success:
                         print(f"[SUCCESS] Updated sync.py with profile: {profile_path}")
@@ -181,7 +227,7 @@ def main():
                     print("="*60 + "\n")
                     continue
                 else:
-                    print(f"[ERROR] Please enter a number between 1 and {len(profiles) + 2}")
+                    print(f"[ERROR] Please enter a number between 0 and {len(profiles) + 2}")
             
             except ValueError:
                 print("[ERROR] Please enter a valid number")

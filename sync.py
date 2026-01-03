@@ -16,7 +16,7 @@ from io import BytesIO
 # --- CONFIGURATION ---
 # Set your Firefox profile path (find it in ~/.mozilla/firefox/)
 # Example: "~/.mozilla/firefox/yvntn2wj.automation"
-PROFILE_PATH = os.path.expanduser("~/.mozilla/firefox/f9q0lv4q.asdf")
+PROFILE_PATH = os.path.expanduser("~/.mozilla/firefox/p6tus3mi.a2")
 DOWNLOAD_PATH = os.path.expanduser("~/Downloads")
 
 def get_firefox_driver():
