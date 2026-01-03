@@ -15,3 +15,6 @@ dependencies = [
 
 [project.scripts]
 janitor-sync = "sync:main"
+
+[tool.setuptools]
+py-modules = ["sync", "setup_profile"]
