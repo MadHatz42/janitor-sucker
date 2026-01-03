@@ -1,59 +1,75 @@
 # JanitorAI to Sucker.dev Character Sync
 
-Automates the process of extracting characters from [JanitorAI.com](https://janitorai.com/) sending them to [sucker](https://sucker.severian.dev/) and downloading both the characters.json + the image separately
-Designed for use with local AI hosting clients like [SillyTavern](https://github.com/SillyTavern/SillyTavern)
+Automates the process of extracting characters from [JanitorAI.com](https://janitorai.com/) sending them to [sucker](https://sucker.severian.dev/) and downloading both the characters.json + the image separately. Designed for use with local AI hosting clients like [SillyTavern](https://github.com/SillyTavern/SillyTavern).
+
+## Installation
+
+### pipx (Recommended)
+
+```bash
+pipx install git+https://github.com/MadHatz42/janitor-sucker.git
+```
+
+After installation, run `janitor-dl` to start the interactive menu.
+
+### AUR (Arch Linux)
+
+<!-- AUR package coming soon -->
 
 ## Requirements
 
 - Python 3.7+
 - Firefox browser
-- Selenium (`pip install selenium`)
-- Pillow (`pip install pillow`)
+- Selenium and Pillow (installed automatically with pipx)
 
-## Setup
+## Quick Start
 
-1. Install dependencies:
+1. **Run the tool:**
    ```bash
-   pip install selenium pillow
+   janitor-dl
    ```
 
-2. Set up your Firefox profile:
-   ```bash
-   python setup_profile.py
-   ```
-   This will:
-   - Find all your Firefox profiles
-   - Let you select which one to use
-   - Automatically update `sync.py` with the selected profile
-   - Provide instructions if you need to create a new profile
+2. **Set up your Firefox profile:**
+   - Select option `2` from the menu to set up your Firefox profile
+   - Choose an existing profile or create a new one (option `3`)
+   - If creating a new profile, Firefox will automatically open with JanitorAI
+   - Sign in to JanitorAI, then close Firefox completely
 
-   **Note:** If you're getting 403/Access Restricted errors, create a new Firefox profile specifically for automation to avoid blocking your main profile.
+3. **Start syncing characters:**
+   - Select option `1` from the menu to start character sync
+   - When the browser opens, manually navigate to the character chat page you want to export
+   - Press ENTER in the terminal when ready
+   - The script will automatically:
+     - Detect the character name
+     - Send it to the chatbox
+     - Open sucker.dev and download the JSON
+     - Navigate back and download the character image
 
-## Usage
+## Features
 
-1. Run the script:
-   ```bash
-   python sync.py
-   ```
+- **Interactive TUI Menu**: Easy-to-use text interface for all operations
+- **Automated Profile Creation**: Create Firefox profiles directly from the tool
+- **Automatic Browser Launch**: New profiles automatically open Firefox with JanitorAI
+- **Profile Management**: Switch between Firefox profiles easily
+- **Error Recovery**: Script loops on errors, allowing you to fix issues without restarting
+- **Batch Processing**: Process multiple characters without restarting the browser
 
-2. When the browser opens, **manually navigate** to JanitorAI and log in (this avoids automated navigation detection)
+## Menu Options
 
-3. Navigate to the character chat page you want to export
+The `janitor-dl` command provides an interactive menu with the following options:
 
-4. Press ENTER in the terminal when ready
-
-5. The script will:
-   - Detect the character name
-   - Send it to the chatbox
-   - Open sucker.dev and download the JSON
-   - Navigate back and download the character image
+1. **Start character sync** - Begin downloading characters from JanitorAI
+2. **Setup Firefox profile** - Select or manage Firefox profiles for automation
+3. **Create new Firefox profile** - Automatically create a new Firefox profile
+4. **Exit** - Quit the application
 
 ## Notes
 
-- Make sure Firefox is completely closed before running the script
-- If you get 403/Access Restricted errors, the profile may be blocked - try a different Firefox profile
-- The script loops, so you can process multiple characters without restarting
-- Type 'quit' to exit
+- Make sure Firefox is completely closed before running character sync
+- If you get 403/Access Restricted errors, the profile may be blocked - create a new Firefox profile using option `3`
+- The script loops on errors, so you can fix issues and continue without restarting
+- Type 'quit' in the sync interface to exit
+- It's recommended to create a dedicated Firefox profile for automation to avoid blocking your main profile
 
 ## Disclaimer
 
