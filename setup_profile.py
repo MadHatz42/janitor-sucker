@@ -16,14 +16,34 @@ def find_firefox_profiles():
         print("[ERROR] Firefox profiles directory not found!")
         return []
     
+    # Exclude system directories
+    excluded = {"Crash Reports", "Pending Pings", "Profile Groups"}
+    
     profiles = []
     for item in firefox_dir.iterdir():
-        if item.is_dir():
-            # Look for profile directories (contain .default, .release, .automation, etc.)
-            if re.search(r'\.(default|release|automation)', item.name):
-                profiles.append(item)
+        if not item.is_dir():
+            continue
+        
+        # Skip excluded directories
+        if item.name in excluded:
+            continue
+        
+        # Firefox profiles typically have a pattern like:
+        # - name.default
+        # - name.default-release
+        # - name.default-default
+        # - name.automation
+        # - Or just any directory that contains a prefs.js file (indicates it's a profile)
+        profile_prefs = item / "prefs.js"
+        if profile_prefs.exists():
+            # This is a valid Firefox profile
+            profiles.append(item)
+        elif re.search(r'\.(default|release|automation)', item.name):
+            # Also include directories matching common profile patterns
+            # even if prefs.js doesn't exist yet (newly created)
+            profiles.append(item)
     
-    return sorted(profiles)
+    return sorted(profiles, key=lambda x: x.stat().st_mtime, reverse=True)  # Sort by modification time, newest first
 
 def get_current_profile():
     """Get the current PROFILE_PATH from sync.py."""
@@ -80,81 +100,94 @@ def main():
     print("="*60)
     print(" " * 10 + "Firefox Profile Setup")
     print("="*60)
-    print("\nFinding Firefox profiles...\n")
+    print("\n[INFO] If you've used this script before and are getting 403 errors,")
+    print("       create a new Firefox profile and select it here.")
+    print("="*60)
     
-    profiles = find_firefox_profiles()
-    
-    if not profiles:
-        print("[ERROR] No Firefox profiles found!")
-        print("\nIf you're getting 403 errors, you may need to:")
-        print("1. Create a new Firefox profile")
-        print("2. Sign in to JanitorAI in that profile")
-        print("3. Run this script again to select it")
-        return 1
-    
-    print("Available Firefox profiles:\n")
-    for i, profile in enumerate(profiles, 1):
-        profile_name = profile.name
-        profile_path = f"~/.mozilla/firefox/{profile_name}"
-        print(f"  {i}. {profile_name}")
-        print(f"     {profile_path}\n")
-    
-    print(f"  {len(profiles) + 1}. Create instructions for a new profile\n")
-    
+    # Scan for profiles (can rescan if needed)
     while True:
-        try:
-            choice = input(f"Select a profile (1-{len(profiles) + 1}): ").strip()
-            choice_num = int(choice)
-            
-            if 1 <= choice_num <= len(profiles):
-                selected_profile = profiles[choice_num - 1]
-                profile_name = selected_profile.name
-                profile_path = f"~/.mozilla/firefox/{profile_name}"
-                
-                print(f"\n[INFO] Selected profile: {profile_name}")
-                
-                success, status = update_sync_py(profile_path)
-                
-                if status == "already_in_use":
-                    print(f"[INFO] This profile is already in use in sync.py")
-                    print(f"       No changes needed. You can run sync.py with this profile.")
-                    return 0
-                elif success:
-                    print(f"[SUCCESS] Updated sync.py with profile: {profile_path}")
-                    print("\nYou can now run sync.py with this profile.")
-                    return 0
-                elif status == "not_found_in_file":
-                    print("[ERROR] Could not find PROFILE_PATH line in sync.py")
-                    return 1
-                else:
-                    print("[ERROR] Failed to update sync.py")
-                    return 1
-            
-            elif choice_num == len(profiles) + 1:
-                print("\n" + "="*60)
-                print("How to create a new Firefox profile:")
-                print("="*60)
-                print("\n1. Open Firefox")
-                print("2. Type 'about:profiles' in the address bar")
-                print("3. Click 'Create a New Profile'")
-                print("4. Follow the wizard to create a new profile")
-                print("5. Start Firefox with the new profile")
-                print("6. Sign in to JanitorAI in that profile")
-                print("7. Close Firefox")
-                print("8. Run this script again to select the new profile")
-                print("\nNote: It's recommended to create a profile specifically")
-                print("      for automation to avoid blocking your main profile.")
-                print("="*60 + "\n")
-                continue
-            else:
-                print(f"[ERROR] Please enter a number between 1 and {len(profiles) + 1}")
+        print("\nScanning for Firefox profiles...\n")
+        profiles = find_firefox_profiles()
         
-        except ValueError:
-            print("[ERROR] Please enter a valid number")
-        except KeyboardInterrupt:
-            print("\n[INFO] Cancelled.")
+        if not profiles:
+            print("[ERROR] No Firefox profiles found!")
+            print("\nIf you're getting 403 errors, you may need to:")
+            print("1. Create a new Firefox profile")
+            print("2. Sign in to JanitorAI in that profile")
+            print("3. Close Firefox and run this script again")
             return 1
+        
+        print("Available Firefox profiles:\n")
+        for i, profile in enumerate(profiles, 1):
+            profile_name = profile.name
+            profile_path = f"~/.mozilla/firefox/{profile_name}"
+            # Check if it's a fully initialized profile
+            has_prefs = (profile / "prefs.js").exists()
+            status = "✓" if has_prefs else "⚠ (new/incomplete)"
+            print(f"  {i}. {profile_name} {status}")
+            print(f"     {profile_path}\n")
+        
+        print(f"  {len(profiles) + 1}. Rescan for profiles")
+        print(f"  {len(profiles) + 2}. Create instructions for a new profile\n")
+        
+        while True:
+            try:
+                choice = input(f"Select a profile (1-{len(profiles) + 2}): ").strip()
+                choice_num = int(choice)
+                
+                if 1 <= choice_num <= len(profiles):
+                    selected_profile = profiles[choice_num - 1]
+                    profile_name = selected_profile.name
+                    profile_path = f"~/.mozilla/firefox/{profile_name}"
+                    
+                    print(f"\n[INFO] Selected profile: {profile_name}")
+                    
+                    success, status = update_sync_py(profile_path)
+                    
+                    if status == "already_in_use":
+                        print(f"[INFO] This profile is already in use in sync.py")
+                        print(f"       No changes needed. You can run sync.py with this profile.")
+                        return 0
+                    elif success:
+                        print(f"[SUCCESS] Updated sync.py with profile: {profile_path}")
+                        print("\nYou can now run sync.py with this profile.")
+                        return 0
+                    elif status == "not_found_in_file":
+                        print("[ERROR] Could not find PROFILE_PATH line in sync.py")
+                        return 1
+                    else:
+                        print("[ERROR] Failed to update sync.py")
+                        return 1
+                
+                elif choice_num == len(profiles) + 1:
+                    # Rescan for profiles
+                    print("\nRescanning for profiles...\n")
+                    break  # Break inner loop to rescan
+                
+                elif choice_num == len(profiles) + 2:
+                    print("\n" + "="*60)
+                    print("How to create a new Firefox profile:")
+                    print("="*60)
+                    print("\n1. Open Firefox")
+                    print("2. Type 'about:profiles' in the address bar")
+                    print("3. Click 'Create a New Profile'")
+                    print("4. Follow the wizard to create a new profile")
+                    print("5. Start Firefox with the new profile")
+                    print("6. Sign in to JanitorAI in that profile")
+                    print("7. Close Firefox completely")
+                    print("8. Select option to rescan profiles in this script")
+                    print("\nNote: It's recommended to create a profile specifically")
+                    print("      for automation to avoid blocking your main profile.")
+                    print("="*60 + "\n")
+                    continue
+                else:
+                    print(f"[ERROR] Please enter a number between 1 and {len(profiles) + 2}")
+            
+            except ValueError:
+                print("[ERROR] Please enter a valid number")
+            except KeyboardInterrupt:
+                print("\n[INFO] Cancelled.")
+                return 1
 
 if __name__ == "__main__":
     sys.exit(main())
-

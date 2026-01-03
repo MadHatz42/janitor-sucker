@@ -16,7 +16,7 @@ from io import BytesIO
 # --- CONFIGURATION ---
 # Set your Firefox profile path (find it in ~/.mozilla/firefox/)
 # Example: "~/.mozilla/firefox/yvntn2wj.automation"
-PROFILE_PATH = os.path.expanduser("~/.mozilla/firefox/yvntn2wj.automation")
+PROFILE_PATH = os.path.expanduser("~/.mozilla/firefox/f9q0lv4q.asdf")
 DOWNLOAD_PATH = os.path.expanduser("~/Downloads")
 
 def get_firefox_driver():
@@ -322,7 +322,7 @@ def download_and_convert_image(driver, char_name):
     
     return save_path
 
-def run():
+def main():
     print("[INIT] Launching Firefox via Selenium...")
     driver = get_firefox_driver()
     
@@ -447,4 +447,4 @@ def run():
         # Uncomment to auto-close: driver.quit()
 
 if __name__ == "__main__":
-    run()
+    main()
