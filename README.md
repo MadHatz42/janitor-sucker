@@ -1,6 +1,7 @@
 # JanitorAI to Sucker.dev Character Sync
 
-Automates the process of extracting characters from JanitorAI.com and downloading them to sucker.dev.
+Automates the process of extracting characters from [JanitorAI.com](https://janitorai.com/) sending them to [sucker](https://sucker.severian.dev/) and downloading both the characters.json + the image separately
+Designed for use with local AI hosting clients like [SillyTavern](https://github.com/SillyTavern/SillyTavern)
 
 ## Requirements
 
@@ -54,3 +55,7 @@ Automates the process of extracting characters from JanitorAI.com and downloadin
 - The script loops, so you can process multiple characters without restarting
 - Type 'quit' to exit
 
+## Disclaimer
+
+Currently from my testing Janitor does NOT ban your account if it detects a script, rather it might block the profile, thus the note about making new firefox profiles just in case!
+But thats not to say this might change in the future! so before warned that I am NOT responsable if your account gets blocked, restricted or banned, while making the script i've tested it over 50 times with only my firefox profile getting blocked, but this current version should be the most undetectable yet! and so far I've experienced no issues with it! but don't come crying saying I didn't warn ya!
