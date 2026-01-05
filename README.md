@@ -12,10 +12,6 @@ pipx install git+https://github.com/MadHatz42/janitor-sucker.git
 
 After installation, run `janitor-dl` to start the interactive menu.
 
-### AUR (Arch Linux)
-
-<!-- AUR package coming soon -->
-
 ## Requirements
 
 - Python 3.7+
@@ -75,3 +71,8 @@ The `janitor-dl` command provides an interactive menu with the following options
 
 Currently from my testing Janitor does NOT ban your account if it detects a script, rather it might block the profile, thus the note about making new firefox profiles just in case!
 But thats not to say this might change in the future! so before warned that I am NOT responsable if your account gets blocked, restricted or banned, while making the script i've tested it over 50 times with only my firefox profile getting blocked, but this current version should be the most undetectable yet! and so far I've experienced no issues with it! but don't come crying saying I didn't warn ya!
+
+## Disclaimer 2 
+
+If you use Firefox as your main browser, it's unadviced to use the **Automated Profile Creation** since it will likely mess with your current firefox profile, I recommend taking a backup for your profile always! with **about:profile** find your default profiles path folder, navigate to it and save it!
+
