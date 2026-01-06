@@ -9,6 +9,7 @@ Automates the process of extracting characters from [JanitorAI.com](https://jani
 ```bash
 pipx install git+https://github.com/MadHatz42/janitor-sucker.git
 ```
+*if you dont have pipx, you can get it via the AUR https://archlinux.org/packages/extra/any/python-pipx/*
 
 After installation, run `janitor-dl` to start the interactive menu.
 
